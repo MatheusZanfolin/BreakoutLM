@@ -1,0 +1,31 @@
+500 ICON MOVEABLE PURE LOADONCALL DISCARDABLE "MAINICON.ICO"
+
+#define ID_FUNDO   1
+#define ID_PLAYER  2
+#define ID_BOLINHA 3
+
+#define ID_AMARELO 4
+#define ID_VERDE   5
+#define ID_AZUL    6
+
+ID_FUNDO   BITMAP "fundo.bmp"
+ID_PLAYER  BITMAP "player.bmp"
+ID_BOLINHA BITMAP "bolinha.bmp"
+
+ID_AMARELO BITMAP "amarelo.bmp"
+ID_VERDE   BITMAP "verde.bmp"
+ID_AZUL    BITMAP "azul.bmp"
+
+600 MENUEX MOVEABLE IMPURE LOADONCALL DISCARDABLE
+BEGIN
+    POPUP "&File", , , 0
+    BEGIN
+        MENUITEM "&Exit", 1000
+    END
+    POPUP "&Help", , , 0
+    BEGIN
+        MENUITEM "&About", 1900
+    END
+END
+
+
