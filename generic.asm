@@ -11,6 +11,8 @@
       .model flat, stdcall   ; FLAT memory model & STDCALL calling
       option casemap :none   ; set code to case sensitive
 
+
+
 ; #########################################################################
 
       ; ---------------------------------------------
@@ -28,10 +30,11 @@
       include \masm32\include\gdi32.inc
       include \masm32\include\user32.inc
       include \masm32\include\kernel32.inc
-
+      include timer.inc
       includelib \masm32\lib\gdi32.lib
       includelib \masm32\lib\user32.lib
       includelib \masm32\lib\kernel32.lib
+     ; includelib \masm32\lib\timer.lib
 
 ; #########################################################################
 
@@ -369,6 +372,8 @@ WndProc proc hWin   :DWORD,
         invoke LoadBitmap, hInstance, ID_AZUL    ; Lê os gráficos para o bloco azul
         mov hAzul, eax                           ; Coloca um handle na memória
 
+        invoke SetTimer, hWin, 222, 1000, NULL
+
     .elseif uMsg == WM_PAINT
     ; --------------------------------------------------------------------
     ; Aqui se realizará o processamento dos gráficos do jogo
@@ -465,7 +470,13 @@ repete_az:
 
 fim:
         invoke EndPaint, hWin, ADDR Ps ; Encerrando a "pintura" do formulário
+    .elseif uMsg == WM_TIMER
+        ;fazer alguma coisa
 
+        ;invoke TextOut, hWin, , , 
+        szText msg, "TIMER APARENTEMENTE FUNFA UHUL"
+        invoke MessageBox, hWin, ADDR msg, ADDR szDisplayName, MB_OK
+        return 0  
     .elseif uMsg == WM_CLOSE
     ; -------------------------------------------------------------------
     ; This is the place where various requirements are performed before
@@ -475,8 +486,8 @@ fim:
     ; exits the WndProc procedure without passing this message to the
     ; default window processing done by the operating system.
     ; -------------------------------------------------------------------
-        
-
+      invoke KillTimer, hWin, 222
+      
     .elseif uMsg == WM_DESTROY
     ; ----------------------------------------------------------------
     ; This message MUST be processed to cleanly exit the application.
