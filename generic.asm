@@ -96,7 +96,12 @@
 ; ------------------------------------------------------------------------
 ; Algumas constantes do programa
 ; ------------------------------------------------------------------------
+    ; --------------------------------------------------------------------
+    ; Constantes gerais
+    ; --------------------------------------------------------------------
 
+    ASCII_A equ 65 ; apertando A o jogador se move para a esquerda 
+    ASCII_D equ 68 ; apertando D o jogador se move para a direita
     ; --------------------------------------------------------------------
     ; Constantes dos gráficos
     ; --------------------------------------------------------------------
@@ -119,6 +124,7 @@
     X_INICIAL_JOGADOR equ 30
     Y_JOGADOR         equ 250
 
+    VEL_JOGADOR       equ 5
     ; --------------------------------------------------------------------
     ; Constantes do cenário
     ; --------------------------------------------------------------------
@@ -179,6 +185,13 @@
 
     bolinhaIndoDireita DD 0
     bolinhaSubindo     DD 0
+
+	; --------------------------------------------------------------------
+    ; Variaveis do jogador
+    ; --------------------------------------------------------------------
+
+    apertouEsq db 0
+    apertouDir db 0
 
 ; #########################################################################
 
@@ -407,7 +420,7 @@ WndProc proc hWin   :DWORD,
         invoke BitBlt, hDC, 0, 0, LARGURA_CENARIO, ALTURA_CENARIO, hMemDC, 0, 0, SRCCOPY
 
         ; ----------------------------------------------------------------
-        ; Desenhando jogador no cenário
+        ; Desenhando jogador no cenárioaddad
         ; ----------------------------------------------------------------
 
         invoke SelectObject, hMemDC, hPlayer
@@ -486,8 +499,14 @@ fim:
 
 bolinha_descendo:
 
+		; TODO
 
-        return 0  
+    .elseif uMsg == WM_CHAR
+      .if wParam == ASCII_A
+
+      .elseif wParam ==  ASCII_D
+
+	  .endif
     .elseif uMsg == WM_CLOSE
     ; -------------------------------------------------------------------
     ; This is the place where various requirements are performed before
