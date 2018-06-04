@@ -143,6 +143,8 @@
     X_INICIAL_BOLINHA equ X_INICIAL_JOGADOR + (LARGURA_JOGADOR / 2) - (LARGURA_BOLINHA / 2)
     Y_INICIAL_BOLINHA equ Y_JOGADOR - ALTURA_BOLINHA - 5
 
+    VEL_BOLINHA equ 4
+
 ; ------------------------------------------------------------------------
 ; This is the INITIALISED data section meaning that data declared here has
 ; an initial value. You can also use an UNINIALISED section if you need
@@ -170,6 +172,13 @@
         CommandLine   dd 0
         hWnd          dd 0
         hInstance     dd 0
+
+    ; --------------------------------------------------------------------
+    ; Variaveis da bolinha
+    ; --------------------------------------------------------------------
+
+    bolinhaIndoDireita DD 0
+    bolinhaSubindo     DD 0
 
 ; #########################################################################
 
@@ -470,12 +479,14 @@ repete_az:
 
 fim:
         invoke EndPaint, hWin, ADDR Ps ; Encerrando a "pintura" do formulário
-    .elseif uMsg == WM_TIMER
-        ;fazer alguma coisa
 
-        ;invoke TextOut, hWin, , , 
-        szText msg, "TIMER APARENTEMENTE FUNFA UHUL"
-        invoke MessageBox, hWin, ADDR msg, ADDR szDisplayName, MB_OK
+    .elseif uMsg == WM_TIMER
+        cmp bolinhaSubindo, 0
+        jne bolinha_descendo
+
+bolinha_descendo:
+
+
         return 0  
     .elseif uMsg == WM_CLOSE
     ; -------------------------------------------------------------------
