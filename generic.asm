@@ -96,7 +96,12 @@
 ; ------------------------------------------------------------------------
 ; Algumas constantes do programa
 ; ------------------------------------------------------------------------
+    ; --------------------------------------------------------------------
+    ; Constantes gerais
+    ; --------------------------------------------------------------------
 
+    ASCII_A equ 65 ; apertando A o jogador se move para a esquerda 
+    ASCII_D equ 68 ; apertando D o jogador se move para a direita
     ; --------------------------------------------------------------------
     ; Constantes dos gráficos
     ; --------------------------------------------------------------------
@@ -119,6 +124,7 @@
     X_INICIAL_JOGADOR equ 30
     Y_JOGADOR         equ 250
 
+    VEL_JOGADOR       equ 5
     ; --------------------------------------------------------------------
     ; Constantes do cenário
     ; --------------------------------------------------------------------
@@ -171,6 +177,9 @@
         hWnd          dd 0
         hInstance     dd 0
 
+
+        apertouEsq db 0
+        apertouDir db 0
 ; #########################################################################
 
 ; ------------------------------------------------------------------------
@@ -398,7 +407,7 @@ WndProc proc hWin   :DWORD,
         invoke BitBlt, hDC, 0, 0, LARGURA_CENARIO, ALTURA_CENARIO, hMemDC, 0, 0, SRCCOPY
 
         ; ----------------------------------------------------------------
-        ; Desenhando jogador no cenário
+        ; Desenhando jogador no cenárioaddad
         ; ----------------------------------------------------------------
 
         invoke SelectObject, hMemDC, hPlayer
@@ -474,8 +483,16 @@ fim:
         ;fazer alguma coisa
 
         ;invoke TextOut, hWin, , , 
-        szText msg, "TIMER APARENTEMENTE FUNFA UHUL"
-        invoke MessageBox, hWin, ADDR msg, ADDR szDisplayName, MB_OK
+        ;szText msg, "TIMER APARENTEMENTE FUNFA UHUL"
+        ;invoke MessageBox, hWin, ADDR msg, ADDR szDisplayName, MB_OK
+    .elseif uMsg == WM_CHAR
+      .if wParam == ASCII_A
+
+      .elseif wParam ==  ASCII_D
+
+.default
+
+
         return 0  
     .elseif uMsg == WM_CLOSE
     ; -------------------------------------------------------------------
