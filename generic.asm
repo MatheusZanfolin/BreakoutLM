@@ -494,12 +494,19 @@ fim:
         invoke EndPaint, hWin, ADDR Ps ; Encerrando a "pintura" do formulário
 
     .elseif uMsg == WM_TIMER
-        cmp bolinhaSubindo, 0
-        jne bolinha_descendo
+        .if bolinhaSubindo == 0
 
-bolinha_descendo:
+        .else
 
-		; TODO
+        .endif
+
+        .if bolinhaIndoDireita == 0
+
+        .else
+
+        .endif
+
+        invoke InvalidateRect, hWnd, NULL, 0
 
     .elseif uMsg == WM_CHAR
       .if wParam == ASCII_A
@@ -507,6 +514,7 @@ bolinha_descendo:
       .elseif wParam ==  ASCII_D
 
 	  .endif
+	  
     .elseif uMsg == WM_CLOSE
     ; -------------------------------------------------------------------
     ; This is the place where various requirements are performed before
