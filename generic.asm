@@ -433,7 +433,7 @@ WndProc proc hWin   :DWORD,
 
         invoke SelectObject, hMemDC, hBolinha
 
-        invoke BitBlt, hDC, X_INICIAL_BOLINHA, Y_INICIAL_BOLINHA, LARGURA_BOLINHA, ALTURA_BOLINHA, hMemDC, 0, 0, SRCCOPY
+        invoke BitBlt, hDC, posicaoBolinha.x, posicaoBolinha.y, LARGURA_BOLINHA, ALTURA_BOLINHA, hMemDC, 0, 0, SRCCOPY
 
         ; ----------------------------------------------------------------
         ; Desenhando os blocos da barreira
@@ -495,15 +495,15 @@ fim:
 
     .elseif uMsg == WM_TIMER
         .if bolinhaSubindo == 0
-
+        	sub posicaoBolinha.y, VEL_BOLINHA
         .else
-
+        	add posicaoBolinha.y, VEL_BOLINHA
         .endif
 
         .if bolinhaIndoDireita == 0
-
+			add posicaoBolinha.x, VEL_BOLINHA
         .else
-
+        	sub posicaoBolinha.x, VEL_BOLINHA
         .endif
 
         invoke InvalidateRect, hWnd, NULL, 0
