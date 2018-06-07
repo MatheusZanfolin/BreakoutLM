@@ -100,8 +100,11 @@
     ; Constantes gerais
     ; --------------------------------------------------------------------
 
-    COD_A equ 0x41 ; apertando A o jogador se move para a esquerda 
-    COD_D equ 0x44 ; apertando D o jogador se move para a direita
+    ASCII_A equ 65 ; apertando A o jogador se move para a esquerda 
+    ASCII_D equ 68 ; apertando D o jogador se move para a direita
+
+    LARGURA_FORM equ 500
+    ALTURA_FORM  equ 350
     ; --------------------------------------------------------------------
     ; Constantes dos gráficos
     ; --------------------------------------------------------------------
@@ -149,6 +152,8 @@
     X_INICIAL_BOLINHA equ X_INICIAL_JOGADOR + (LARGURA_JOGADOR / 2) - (LARGURA_BOLINHA / 2)
     Y_INICIAL_BOLINHA equ Y_JOGADOR - ALTURA_BOLINHA - 5
 
+    VEL_BOLINHA equ 4
+
 ; ------------------------------------------------------------------------
 ; This is the INITIALISED data section meaning that data declared here has
 ; an initial value. You can also use an UNINIALISED section if you need
@@ -177,11 +182,20 @@
         hWnd          dd 0
         hInstance     dd 0
 
+    ; --------------------------------------------------------------------
+    ; Variaveis da bolinha
+    ; --------------------------------------------------------------------
 
-        apertouEsq db 0
-        apertouDir db 0
-        codChar    db 0
-        
+    bolinhaIndoDireita DD 1
+    bolinhaSubindo     DD 1
+
+	; --------------------------------------------------------------------
+    ; Variaveis do jogador
+    ; --------------------------------------------------------------------
+
+    apertouEsq db 0
+    apertouDir db 0
+
 ; #########################################################################
 
 ; ------------------------------------------------------------------------
@@ -258,8 +272,8 @@ WinMain proc hInst     :DWORD,
         ; Centre window at following size
         ;================================
 
-        mov Wwd, 500
-        mov Wht, 350
+        mov Wwd, LARGURA_FORM
+        mov Wht, ALTURA_FORM
 
         invoke GetSystemMetrics,SM_CXSCREEN ; get screen width in pixels
         invoke TopXY,Wwd,eax
@@ -365,47 +379,8 @@ WndProc proc hWin   :DWORD,
         mov posicaoBolinha.x, X_INICIAL_BOLINHA
         mov posicaoBolinha.y, Y_INICIAL_BOLINHA
 
+        invoke SetTimer, hWin, 222, 33, NULL ; Colocar timer para 42ms para 24 FPS
 
-
-        invoke LoadBitmap, hInstance, ID_FUNDO   ; Lê os gráficos para o "cenário"
-        mov hFundo, eax                          ; Coloca um handle na memória
-
-        invoke LoadBitmap, hInstance, ID_PLAYER  ; Lê os gráficos para o jogador         
-        mov hPlayer, eax                         ; Coloca um handle na memória        
-
-        invoke LoadBitmap, hInstance, ID_BOLINHA ; Lê os gráficos para a bolinha
-        mov hBolinha, eax                        ; Coloca um handle na memória
-
-        invoke LoadBitmap, hInstance, ID_AMARELO ; Lê os gráficos para o bloco amarelo
-        mov hAmarelo, eax                        ; Coloca um handle na memória
-
-        invoke LoadBitmap, hInstance, ID_VERDE   ; Lê os gráficos para o bloco verde
-        mov hVerde, eax                          ; Coloca um handle na memória
-
-        invoke LoadBitmap, hInstance, ID_AZUL    ; Lê os gráficos para o bloco azul
-        mov hAzul, eax                           ; Coloca um handle na memória
-
-        invoke SetTimer, hWin, 222, 1000, NULL
-;    .elseif uMsg == WM_CHAR
-;
-;        push wParam
-;        pop codChar
-;
-;        ;  invoke BitBlt, hDC, posicaoJogador.x, Y_JOGADOR, LARGURA_JOGADOR, ALTURA_JOGADOR, hMemDC, 0, 0, SRCCOPY
-;            szText msg,ADDR codChar
-;            invoke MessageBox, hWin, ADDR msg, ADDR szDisplayName, MB_OK
-;          .if ADDR codChar == COD_A
-;              mov apertouEsq, 1
-;          .endif
-;          .if ADDR codChar == COD_D
-;              mov apertouDir, 1
-;          .endif
-    .elseif uMsg == WM_LBUTTONDOWN
-            szText msg,"M1 MOUSE"
-            invoke MessageBox, hWin, ADDR msg, ADDR szDisplayName, MB_OK
-      mov apertouEsq, 1
-    .elseif uMsg == WM_RBUTTONDOWN
-      mov apertouDir, 1
     .elseif uMsg == WM_PAINT
     ; --------------------------------------------------------------------
     ; Aqui se realizará o processamento dos gráficos do jogo
@@ -443,7 +418,7 @@ WndProc proc hWin   :DWORD,
 
         invoke SelectObject, hMemDC, hBolinha
 
-        invoke BitBlt, hDC, X_INICIAL_BOLINHA, Y_INICIAL_BOLINHA, LARGURA_BOLINHA, ALTURA_BOLINHA, hMemDC, 0, 0, SRCCOPY
+        invoke BitBlt, hDC, posicaoBolinha.x, posicaoBolinha.y, LARGURA_BOLINHA, ALTURA_BOLINHA, hMemDC, 0, 0, SRCCOPY
 
         ; ----------------------------------------------------------------
         ; Desenhando os blocos da barreira
@@ -502,31 +477,75 @@ repete_az:
 
 fim:
         invoke EndPaint, hWin, ADDR Ps ; Encerrando a "pintura" do formulário
+
     .elseif uMsg == WM_TIMER
-        ;fazer alguma coisa
-        
-        .if apertouEsq == 1
-            .if apertouDir!=1
-                 mov posicaoJogador.x, posicaoJogador.x - 5
-                 jmp moverEsq
-            .endif
-            ; mover para esquerda
+        .if bolinhaSubindo == 0
+        	.if posicaoBolinha.y >= ALTURA_FORM
+        		szText Sobe,"Sobe"
+            	invoke MessageBox,hWin,ADDR Sobe,ADDR szDisplayName,MB_OK
+
+        		mov bolinhaSubindo, 1
+        	.else
+        		add posicaoBolinha.y, VEL_BOLINHA        	
+        	.endif
         .else
-            .if apertouDir==1
-             ;mover para direita
-                mov posicaoJogador.x, posicaoJogador.x+5
-            .endif             
-            
+        	.if posicaoBolinha.y <= 0
+        		szText Desce,"Desce"
+            	invoke MessageBox,hWin,ADDR Desce,ADDR szDisplayName,MB_OK
+
+        		mov bolinhaSubindo, 0
+        	.else
+        		sub posicaoBolinha.y, VEL_BOLINHA
+        	.endif
         .endif
-            
 
-        mov apertouEsq, 0
-        mov apertouDir, 0
+        .if bolinhaIndoDireita == 0        	
+        	.if posicaoBolinha.x <= 0
+        		szText Esquerda,"Direita"
+            	invoke MessageBox,hWin,ADDR Esquerda,ADDR szDisplayName,MB_OK
 
-        ;invoke TextOut, hWin, , , 
-        ;szText msg, "TIMER APARENTEMENTE FUNFA UHUL"
-        ;invoke MessageBox, hWin, ADDR msg, ADDR szDisplayName, MB_OK
-        
+        		mov bolinhaIndoDireita, 1
+        	.else
+				sub posicaoBolinha.x, VEL_BOLINHA
+			.endif
+        .else
+        	.if posicaoBolinha.x >= LARGURA_FORM
+        		szText Direita,"Esquerda"
+            	invoke MessageBox,hWin,ADDR Direita,ADDR szDisplayName,MB_OK
+
+        		mov bolinhaIndoDireita, 0
+        	.else
+        		add posicaoBolinha.x, VEL_BOLINHA
+        	.endif
+        .endif
+
+        invoke LoadBitmap, hInstance, ID_FUNDO   ; Lê os gráficos para o "cenário"
+        mov hFundo, eax                          ; Coloca um handle na memória
+
+        invoke LoadBitmap, hInstance, ID_PLAYER  ; Lê os gráficos para o jogador         
+        mov hPlayer, eax                         ; Coloca um handle na memória        
+
+        invoke LoadBitmap, hInstance, ID_BOLINHA ; Lê os gráficos para a bolinha
+        mov hBolinha, eax                        ; Coloca um handle na memória
+
+        invoke LoadBitmap, hInstance, ID_AMARELO ; Lê os gráficos para o bloco amarelo
+        mov hAmarelo, eax                        ; Coloca um handle na memória
+
+        invoke LoadBitmap, hInstance, ID_VERDE   ; Lê os gráficos para o bloco verde
+        mov hVerde, eax                          ; Coloca um handle na memória
+
+        invoke LoadBitmap, hInstance, ID_AZUL    ; Lê os gráficos para o bloco azul
+        mov hAzul, eax                           ; Coloca um handle na memória
+
+        invoke InvalidateRect, hWnd, NULL, 0
+
+    .elseif uMsg == WM_CHAR
+      .if wParam == ASCII_A
+
+      .elseif wParam ==  ASCII_D
+
+	  .endif
+	  
     .elseif uMsg == WM_CLOSE
     ; -------------------------------------------------------------------
     ; This is the place where various requirements are performed before
@@ -554,11 +573,6 @@ fim:
 
         invoke PostQuitMessage,NULL
         return 0 
-
-.default
-
-
-        return 0  
     .endif
 
     invoke DefWindowProc,hWin,uMsg,wParam,lParam
