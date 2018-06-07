@@ -149,6 +149,9 @@
     LARGURA_BOLINHA equ 10
     ALTURA_BOLINHA  equ 10
 
+    COLISAO_BAIXO   equ ALTURA_FORM  - 61
+    COLISAO_DIREITA equ LARGURA_FORM - 20
+
     X_INICIAL_BOLINHA equ X_INICIAL_JOGADOR + (LARGURA_JOGADOR / 2) - (LARGURA_BOLINHA / 2)
     Y_INICIAL_BOLINHA equ Y_JOGADOR - ALTURA_BOLINHA - 5
 
@@ -250,6 +253,8 @@ WinMain proc hInst     :DWORD,
         ; Fill WNDCLASSEX structure with required variables
         ;==================================================
 
+        mov Wwd, LARGURA_FORM
+        mov Wht, ALTURA_FORM
         mov wc.cbSize,         sizeof WNDCLASSEX
         mov wc.style,          CS_HREDRAW or CS_VREDRAW \
                                or CS_BYTEALIGNWINDOW
@@ -270,10 +275,7 @@ WinMain proc hInst     :DWORD,
 
         ;================================
         ; Centre window at following size
-        ;================================
-
-        mov Wwd, LARGURA_FORM
-        mov Wht, ALTURA_FORM
+        ;================================        
 
         invoke GetSystemMetrics,SM_CXSCREEN ; get screen width in pixels
         invoke TopXY,Wwd,eax
@@ -418,7 +420,9 @@ WndProc proc hWin   :DWORD,
 
         invoke SelectObject, hMemDC, hBolinha
 
-        invoke BitBlt, hDC, posicaoBolinha.x, posicaoBolinha.y, LARGURA_BOLINHA, ALTURA_BOLINHA, hMemDC, 0, 0, SRCCOPY
+        invoke BitBlt, hDC, posicaoBolinha.x, posicaoBolinha.y, LARGURA_BOLINHA, ALTURA_BOLINHA, hMemDC, 0, 0, SRCCOPY        
+
+        invoke BitBlt, hDC, edx, 0, LARGURA_BOLINHA, ALTURA_BOLINHA, hMemDC, 0, 0, SRCCOPY
 
         ; ----------------------------------------------------------------
         ; Desenhando os blocos da barreira
@@ -480,19 +484,13 @@ fim:
 
     .elseif uMsg == WM_TIMER
         .if bolinhaSubindo == 0
-        	.if posicaoBolinha.y >= ALTURA_FORM
-        		szText Sobe,"Sobe"
-            	invoke MessageBox,hWin,ADDR Sobe,ADDR szDisplayName,MB_OK
-
+        	.if posicaoBolinha.y + ALTURA_BOLINHA >= COLISAO_BAIXO
         		mov bolinhaSubindo, 1
         	.else
         		add posicaoBolinha.y, VEL_BOLINHA        	
         	.endif
         .else
-        	.if posicaoBolinha.y <= 0
-        		szText Desce,"Desce"
-            	invoke MessageBox,hWin,ADDR Desce,ADDR szDisplayName,MB_OK
-
+        	.if posicaoBolinha.y <= 3
         		mov bolinhaSubindo, 0
         	.else
         		sub posicaoBolinha.y, VEL_BOLINHA
@@ -500,19 +498,13 @@ fim:
         .endif
 
         .if bolinhaIndoDireita == 0        	
-        	.if posicaoBolinha.x <= 0
-        		szText Esquerda,"Direita"
-            	invoke MessageBox,hWin,ADDR Esquerda,ADDR szDisplayName,MB_OK
-
+        	.if posicaoBolinha.x <= 2
         		mov bolinhaIndoDireita, 1
         	.else
 				sub posicaoBolinha.x, VEL_BOLINHA
 			.endif
         .else
-        	.if posicaoBolinha.x >= LARGURA_FORM
-        		szText Direita,"Esquerda"
-            	invoke MessageBox,hWin,ADDR Direita,ADDR szDisplayName,MB_OK
-
+        	.if posicaoBolinha.x + LARGURA_BOLINHA >= COLISAO_DIREITA
         		mov bolinhaIndoDireita, 0
         	.else
         		add posicaoBolinha.x, VEL_BOLINHA
