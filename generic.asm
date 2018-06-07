@@ -507,38 +507,18 @@ fim:
         
         .if apertouEsq == 1
             .if apertouDir!=1
-                 invoke BeginPaint, hWin, ADDR Ps
-                 mov hDC, eax
-                 invoke CreateCompatibleDC, hDC
-                 mov hMemDC, eax
-                 invoke SelectObject, hMemDC, hPlayer
+                 mov posicaoJogador.x, posicaoJogador.x - 5
                  jmp moverEsq
             .endif
             ; mover para esquerda
         .else
             .if apertouDir==1
              ;mover para direita
-                 invoke BeginPaint, hWin, ADDR Ps
-                 mov hDC, eax
-                 invoke CreateCompatibleDC, hDC
-                 mov hMemDC, eax
-                 invoke SelectObject, hMemDC, hPlayer
-                 jmp moverEsq
+                mov posicaoJogador.x, posicaoJogador.x+5
             .endif             
             
         .endif
-        moverEsq:
-            mov posicaoJogador.x, posicaoJogador.x - 5
-
-        jmp fim
-        moverDir:
-            mov posicaoJogador.x, posicaoJogador.x+5
-
-        jmp fim
-        fim:
-
-        invoke BitBlt, hDC, posicaoJogador.x, Y_JOGADOR, LARGURA_JOGADOR ALTURA_JOGADOR, hMemDC, 0, 0, SRCCOPY
-        invoke EndPaint, hWin, ADDR Ps ;
+            
 
         mov apertouEsq, 0
         mov apertouDir, 0
@@ -546,7 +526,7 @@ fim:
         ;invoke TextOut, hWin, , , 
         ;szText msg, "TIMER APARENTEMENTE FUNFA UHUL"
         ;invoke MessageBox, hWin, ADDR msg, ADDR szDisplayName, MB_OK
-    
+        
     .elseif uMsg == WM_CLOSE
     ; -------------------------------------------------------------------
     ; This is the place where various requirements are performed before
