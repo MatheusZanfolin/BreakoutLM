@@ -489,6 +489,25 @@ fim:
         		mov bolinhaSubindo, 1
 
         		sub posicaoBolinha.y, VEL_BOLINHA
+        	.elseif edx >= posicaoJogador.y
+        		mov edx, posicaoBolinha.x
+        		mov ecx, posicaoJogador.x
+        		add ecx, LARGURA_JOGADOR
+
+        		.if edx < ecx
+        			add edx, LARGURA_BOLINHA
+        			sub ecx, LARGURA_JOGADOR
+
+        			.if edx > ecx
+        				mov bolinhaSubindo, 1
+
+        				sub posicaoBolinha.y, VEL_BOLINHA
+        			.else
+        				add posicaoBolinha.y, VEL_BOLINHA
+        			.endif
+        		.else
+        			add posicaoBolinha.y, VEL_BOLINHA
+        		.endif
         	.else
         		add posicaoBolinha.y, VEL_BOLINHA
         	.endif
