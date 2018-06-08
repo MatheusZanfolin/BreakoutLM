@@ -167,9 +167,24 @@
     .data?
 
     posicaoBolinha POINT<>
-    posicaoJogador POINT<>
+    posicaoJogador POINT<>        
 
+    ; --------------------------------------------------------------------
+    ; Variáveis de controle para colisão com os blocos
+    ; --------------------------------------------------------------------
+
+    BLOCO struct
+    	posicao  POINT <>
+    	atingido DWORD 0
+    BLOCO ends
+
+    amarelos BLOCO BLOCOS_POR_FILEIRA dup(<>)
+    verdes   BLOCO BLOCOS_POR_FILEIRA dup(<>)
+    azuis    BLOCO BLOCOS_POR_FILEIRA dup(<>)
+
+    ; --------------------------------------------------------------------
     ; Handles para os gráficos do jogo
+    ; --------------------------------------------------------------------
 
     hFundo   DD ?
     hPlayer  DD ?
