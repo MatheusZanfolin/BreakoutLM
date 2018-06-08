@@ -135,12 +135,12 @@
     LARGURA_CENARIO equ 500
     ALTURA_CENARIO  equ 350
 
-    LARGURA_BLOCO equ LARGURA_JOGADOR
+    LARGURA_BLOCO equ COLISAO_DIREITA / 10
     ALTURA_BLOCO  equ ALTURA_JOGADOR    
 
     Y_PRIMEIRO_BLOCO equ 25
 
-    BLOCOS_POR_FILEIRA equ LARGURA_CENARIO / LARGURA_BLOCO
+    BLOCOS_POR_FILEIRA equ 10;COLISAO_DIREITA / LARGURA_BLOCO
 
     ; --------------------------------------------------------------------
     ; Constantes da bolinha
@@ -189,7 +189,7 @@
     ; Variaveis da bolinha
     ; --------------------------------------------------------------------
 
-    bolinhaIndoDireita DD 1
+    bolinhaIndoDireita DD 0
     bolinhaSubindo     DD 1
 
 	; --------------------------------------------------------------------
@@ -404,7 +404,7 @@ WndProc proc hWin   :DWORD,
 
         invoke SelectObject, hMemDC, hFundo
 
-        invoke BitBlt, hDC, 0, 0, LARGURA_CENARIO, ALTURA_CENARIO, hMemDC, 0, 0, SRCCOPY
+        invoke BitBlt, hDC, 0, 0, COLISAO_DIREITA, COLISAO_BAIXO, hMemDC, 0, 0, SRCCOPY
 
         ; ----------------------------------------------------------------
         ; Desenhando jogador no cenárioaddad
@@ -421,8 +421,6 @@ WndProc proc hWin   :DWORD,
         invoke SelectObject, hMemDC, hBolinha
 
         invoke BitBlt, hDC, posicaoBolinha.x, posicaoBolinha.y, LARGURA_BOLINHA, ALTURA_BOLINHA, hMemDC, 0, 0, SRCCOPY        
-
-        invoke BitBlt, hDC, edx, 0, LARGURA_BOLINHA, ALTURA_BOLINHA, hMemDC, 0, 0, SRCCOPY
 
         ; ----------------------------------------------------------------
         ; Desenhando os blocos da barreira
@@ -483,29 +481,47 @@ fim:
         invoke EndPaint, hWin, ADDR Ps ; Encerrando a "pintura" do formulário
 
     .elseif uMsg == WM_TIMER
-        .if bolinhaSubindo == 0
-        	.if posicaoBolinha.y + ALTURA_BOLINHA >= COLISAO_BAIXO
+		.if bolinhaSubindo == 0
+			mov edx, posicaoBolinha.y
+			add edx, ALTURA_BOLINHA
+
+        	.if edx >= COLISAO_BAIXO
         		mov bolinhaSubindo, 1
+
+        		sub posicaoBolinha.y, VEL_BOLINHA
         	.else
-        		add posicaoBolinha.y, VEL_BOLINHA        	
+        		add posicaoBolinha.y, VEL_BOLINHA
         	.endif
-        .else
-        	.if posicaoBolinha.y <= 3
+        .elseif bolinhaSubindo == 1
+        	mov edx, posicaoBolinha.y
+
+        	.if edx <= 3
         		mov bolinhaSubindo, 0
+
+        		add posicaoBolinha.y, VEL_BOLINHA
         	.else
         		sub posicaoBolinha.y, VEL_BOLINHA
         	.endif
         .endif
 
         .if bolinhaIndoDireita == 0        	
-        	.if posicaoBolinha.x <= 2
+        	mov edx, posicaoBolinha.x
+
+        	.if edx <= 2
         		mov bolinhaIndoDireita, 1
+
+        		add posicaoBolinha.x, VEL_BOLINHA
         	.else
 				sub posicaoBolinha.x, VEL_BOLINHA
 			.endif
-        .else
-        	.if posicaoBolinha.x + LARGURA_BOLINHA >= COLISAO_DIREITA
+        .elseif bolinhaIndoDireita == 1
+        	mov edx, posicaoBolinha.x
+        	add edx, LARGURA_BOLINHA
+
+        	.if edx >= COLISAO_DIREITA
         		mov bolinhaIndoDireita, 0
+
+        		sub posicaoBolinha.x, VEL_BOLINHA
         	.else
         		add posicaoBolinha.x, VEL_BOLINHA
         	.endif
