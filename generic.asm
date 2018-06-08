@@ -166,22 +166,6 @@
 
     .data?
 
-    posicaoBolinha POINT<>
-    posicaoJogador POINT<>        
-
-    ; --------------------------------------------------------------------
-    ; Variáveis de controle para colisão com os blocos
-    ; --------------------------------------------------------------------
-
-    BLOCO struct
-    	posicao  POINT <>
-    	atingido DWORD 0
-    BLOCO ends
-
-    amarelos BLOCO BLOCOS_POR_FILEIRA dup(<>)
-    verdes   BLOCO BLOCOS_POR_FILEIRA dup(<>)
-    azuis    BLOCO BLOCOS_POR_FILEIRA dup(<>)
-
     ; --------------------------------------------------------------------
     ; Handles para os gráficos do jogo
     ; --------------------------------------------------------------------
@@ -213,6 +197,17 @@
 
     apertouEsq db 0
     apertouDir db 0
+
+    posicaoBolinha POINT<>
+    posicaoJogador POINT<>        
+
+    ; --------------------------------------------------------------------
+    ; Variaveis dos blocos
+    ; --------------------------------------------------------------------
+
+    amarelos DWORD BLOCOS_POR_FILEIRA dup(1)
+    verdes   DWORD BLOCOS_POR_FILEIRA dup(1)
+    azuis    DWORD BLOCOS_POR_FILEIRA dup(1)
 
 ; #########################################################################
 
@@ -449,7 +444,18 @@ amarelo:
         invoke SelectObject, hMemDC, hAmarelo
 
 repete_am:
-        invoke BitBlt, hDC, xBloco, yBloco, LARGURA_BLOCO, ALTURA_BLOCO, hMemDC, 0, 0, SRCCOPY
+		lea ecx, offset amarelos
+		
+		mov edx, qtosBlocos				
+		dec edx		
+
+		add ecx, edx ; ECX contem ponteiro para o bloco atual SQN
+
+		mov edx, dword ptr [ecx]
+
+		.if ecx == 1
+        	invoke BitBlt, hDC, xBloco, yBloco, LARGURA_BLOCO, ALTURA_BLOCO, hMemDC, 0, 0, SRCCOPY
+        .endif
 
         cmp qtosBlocos, BLOCOS_POR_FILEIRA
         jge verde
