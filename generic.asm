@@ -205,9 +205,9 @@
     ; Variaveis dos blocos
     ; --------------------------------------------------------------------
 
-    amarelos DWORD BLOCOS_POR_FILEIRA dup(1)
-    verdes   DWORD BLOCOS_POR_FILEIRA dup(1)
-    azuis    DWORD BLOCOS_POR_FILEIRA dup(1)
+    amarelos byte BLOCOS_POR_FILEIRA dup(1)
+    verdes   byte BLOCOS_POR_FILEIRA dup(1)
+    azuis    byte BLOCOS_POR_FILEIRA dup(1)
 
 ; #########################################################################
 
@@ -343,7 +343,7 @@ WndProc proc hWin   :DWORD,
     LOCAL Ps     :DWORD
     LOCAL rect   :RECT
 
-    LOCAL qtosBlocos :DWORD
+    LOCAL qtosBlocos :byte
     LOCAL xBloco     :DWORD
     LOCAL yBloco     :DWORD
 
@@ -446,16 +446,19 @@ amarelo:
 repete_am:
 		lea ecx, offset amarelos
 		
-		mov edx, qtosBlocos				
-		dec edx		
+		mov edx, 0
+		mov dl , qtosBlocos				
+		dec dl		
 
-		add ecx, edx ; ECX contem ponteiro para o bloco atual SQN
+		add ecx, edx ; ECX contem ponteiro para o bloco atual
 
-		mov edx, dword ptr [ecx]
+		mov dl, byte ptr [ecx]
 
-		.if ecx == 1
+		.if dl == 1
         	invoke BitBlt, hDC, xBloco, yBloco, LARGURA_BLOCO, ALTURA_BLOCO, hMemDC, 0, 0, SRCCOPY
         .endif
+
+avancar_am:
 
         cmp qtosBlocos, BLOCOS_POR_FILEIRA
         jge verde
@@ -472,7 +475,19 @@ verde:
         invoke SelectObject, hMemDC, hVerde
 
 repete_ve:
-        invoke BitBlt, hDC, xBloco, yBloco, LARGURA_BLOCO, ALTURA_BLOCO, hMemDC, 0, 0, SRCCOPY
+        lea ecx, offset verdes
+		
+		mov edx, 0
+		mov dl , qtosBlocos				
+		dec dl		
+
+		add ecx, edx ; ECX contem ponteiro para o bloco atual
+
+		mov dl, byte ptr [ecx]
+
+		.if dl == 1
+        	invoke BitBlt, hDC, xBloco, yBloco, LARGURA_BLOCO, ALTURA_BLOCO, hMemDC, 0, 0, SRCCOPY
+        .endif
 
         cmp qtosBlocos, BLOCOS_POR_FILEIRA
         jge azul
@@ -489,7 +504,19 @@ azul:
         invoke SelectObject, hMemDC, hAzul
 
 repete_az:
-        invoke BitBlt, hDC, xBloco, yBloco, LARGURA_BLOCO, ALTURA_BLOCO, hMemDC, 0, 0, SRCCOPY
+        lea ecx, offset azuis
+		
+		mov edx, 0
+		mov dl , qtosBlocos				
+		dec dl		
+
+		add ecx, edx ; ECX contem ponteiro para o bloco atual
+
+		mov dl, byte ptr [ecx]
+
+		.if dl == 1
+        	invoke BitBlt, hDC, xBloco, yBloco, LARGURA_BLOCO, ALTURA_BLOCO, hMemDC, 0, 0, SRCCOPY
+        .endif
 
         cmp qtosBlocos, BLOCOS_POR_FILEIRA
         jge fim
