@@ -338,6 +338,10 @@ WndProc proc hWin   :DWORD,
              wParam :DWORD,
              lParam :DWORD
 
+; -------------------------------------------------------------------------
+; Variaveis de processamento dos gráficos
+; -------------------------------------------------------------------------             
+
     LOCAL hDC    :DWORD
     LOCAL hMemDC :DWORD
     LOCAL Ps     :DWORD
@@ -346,6 +350,15 @@ WndProc proc hWin   :DWORD,
     LOCAL qtosBlocos :byte
     LOCAL xBloco     :DWORD
     LOCAL yBloco     :DWORD
+
+; -------------------------------------------------------------------------
+; Variaveis de verificação de colisões
+; -------------------------------------------------------------------------             
+
+	LOCAL yBlocoAtual :DWORD
+	LOCAL xBlocoAtual :DWORD
+
+	LOCAL indice :DWORD
 
 ; -------------------------------------------------------------------------
 ; Message are sent by the operating system to an application through the
@@ -570,6 +583,159 @@ fim:
         		sub posicaoBolinha.y, VEL_BOLINHA
         	.endif
         .endif
+
+        ;================================================================
+        ;======== Inicio da verificação da colisão bolinha-bloco ========
+        ;================================================================
+
+		mov yBlocoAtual, Y_PRIMEIRO_BLOCO
+		
+verifica_colisao:
+		mov ecx, yBlocoAtual
+		mov edx, posicaoBolinha.y
+
+		add edx, ALTURA_BOLINHA
+
+		.if edx > ecx
+			sub edx, ALTURA_BOLINHA
+			add ecx, ALTURA_BLOCO
+
+			.if edx < ecx
+				mov ecx, xBlocoAtual
+				mov edx, posicaoBolinha.x				
+
+				add edx, LARGURA_BOLINHA
+
+				.if edx > ecx
+					sub edx, LARGURA_BOLINHA
+					add ecx, LARGURA_BLOCO
+
+					.if edx < ecx
+						mov edx, yBlocoAtual
+
+						mov ecx, Y_PRIMEIRO_BLOCO
+
+						.if edx == ecx
+							mov eax, xBlocoAtual
+							mov ebx, LARGURA_BLOCO
+
+							mov edx, 0
+
+							div ebx
+
+							mov indice, eax
+
+							mov eax, offset amarelos
+							add eax, indice			
+
+							mov bl, byte ptr [eax]
+
+							.if bl == 0
+								jmp avanca_bloco
+							.endif				
+
+							mov ebx, 0							
+
+							mov byte ptr [eax], bl
+						.else
+							add ecx, ALTURA_BLOCO
+
+							.if edx == ecx
+								mov eax, xBlocoAtual
+								mov ebx, LARGURA_BLOCO
+
+								mov edx, 0
+
+								div ebx
+
+								mov indice, eax
+
+								mov eax, offset verdes
+								add eax, indice
+
+								mov bl, byte ptr [eax]
+
+								.if bl == 0
+									jmp avanca_bloco
+								.endif
+
+								mov ebx, 0
+
+								mov byte ptr [eax], bl
+							.else
+								add ecx, ALTURA_BLOCO
+
+								.if edx == ecx
+									mov eax, xBlocoAtual
+									mov ebx, LARGURA_BLOCO
+
+									mov edx, 0
+
+									div ebx
+
+									mov indice, eax
+
+									mov eax, offset azuis
+									add eax, indice
+
+									mov bl, byte ptr [eax]
+
+									.if bl == 0
+										jmp avanca_bloco
+									.endif
+
+									mov ebx, 0									
+
+									mov byte ptr [eax], bl
+								.endif
+							.endif													
+						.endif
+
+						mov edx, bolinhaSubindo
+
+						.if edx == 1
+							mov edx, 0
+						.else
+							mov edx, 1
+						.endif
+
+						mov bolinhaSubindo, edx
+
+						jmp fim_colisao
+					.endif
+				.endif
+			.endif
+		.endif
+
+avanca_bloco:
+		add xBlocoAtual, LARGURA_BLOCO
+
+		mov edx, xBlocoAtual
+
+		.if edx >= COLISAO_DIREITA
+			add yBlocoAtual, ALTURA_BLOCO
+
+			mov edx, Y_PRIMEIRO_BLOCO
+			add edx, ALTURA_BLOCO
+			add edx, ALTURA_BLOCO
+			add edx, ALTURA_BLOCO
+
+			mov ecx, yBlocoAtual
+
+			.if yBlocoAtual >= edx
+				jmp fim_colisao
+			.else
+				mov xBlocoAtual, 0
+			.endif
+		.endif
+
+		jmp verifica_colisao
+
+fim_colisao:
+
+		;=================================================================
+        ;========== Fim da verificação da colisão bolinha-bloco ==========
+        ;=================================================================
 
         .if bolinhaIndoDireita == 0        	
         	mov edx, posicaoBolinha.x
