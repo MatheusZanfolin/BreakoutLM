@@ -360,6 +360,8 @@ WndProc proc hWin   :DWORD,
 
 	LOCAL indice :DWORD
 
+	LOCAL jogoAcabou :DWORD
+
 ; -------------------------------------------------------------------------
 ; Message are sent by the operating system to an application through the
 ; WndProc proc. Each message can have additional values associated with it
@@ -398,6 +400,10 @@ WndProc proc hWin   :DWORD,
     ; or child windows.
     ; --------------------------------------------------------------------
 
+    ; --------------------------------------------------------------------
+    ; Inicialização das variáveis de posicionamento dos objetos móveis
+    ; --------------------------------------------------------------------
+
         mov posicaoJogador.x, X_INICIAL_JOGADOR
         mov posicaoJogador.y, Y_JOGADOR
 
@@ -405,6 +411,22 @@ WndProc proc hWin   :DWORD,
         mov posicaoBolinha.y, Y_INICIAL_BOLINHA
 
         invoke SetTimer, hWin, 222, 33, NULL ; Colocar timer para 42ms para 24 FPS
+
+  	; --------------------------------------------------------------------
+    ; Os quatro proximos eventos detectam a entrada do jogador
+    ; --------------------------------------------------------------------
+
+	.elseif uMsg == WM_LBUTTONDOWN
+		mov apertouEsq, 1
+
+    .elseif uMsg == WM_LBUTTONUP
+    	mov apertouEsq, 0
+    
+    .elseif uMsg == WM_RBUTTONDOWN
+    	mov apertouDir, 1
+
+    .elseif uMsg == WM_RBUTTONUP    
+    	mov apertouDir, 0
 
     .elseif uMsg == WM_PAINT
     ; --------------------------------------------------------------------
@@ -541,15 +563,43 @@ repete_az:
 fim:
         invoke EndPaint, hWin, ADDR Ps ; Encerrando a "pintura" do formulário
 
+    ; --------------------------------------------------------------------
+    ; O método de timer controla todo o processamento do jogo, isto é
+    ; a manipulação de cada uma das variáveis
+    ; --------------------------------------------------------------------
+
     .elseif uMsg == WM_TIMER
+    	; --------------------------------------------------------------------
+	    ; Movimento do jogador
+	    ; --------------------------------------------------------------------
+    	.if apertouEsq == 1
+    		.if apertouDir != 1
+    			.if posicaoJogador.x > 0
+    				sub posicaoJogador.x, VEL_JOGADOR
+    			.endif
+    		.endif
+    	.endif
+
+		.if apertouDir == 1
+    		.if apertouEsq != 1
+    			mov edx, posicaoJogador.x
+    			add edx, LARGURA_JOGADOR
+
+    			.if edx < COLISAO_DIREITA
+    				add posicaoJogador.x, VEL_JOGADOR
+    			.endif
+    		.endif
+    	.endif    	
+
+    	; --------------------------------------------------------------------
+	    ; Movimento vertical ba bolinha
+	    ; --------------------------------------------------------------------
 		.if bolinhaSubindo == 0
 			mov edx, posicaoBolinha.y
 			add edx, ALTURA_BOLINHA
 
         	.if edx >= COLISAO_BAIXO
-        		mov bolinhaSubindo, 1
-
-        		sub posicaoBolinha.y, VEL_BOLINHA
+        		invoke SendMessage, hWin, WM_SYSCOMMAND, SC_CLOSE, NULL        		
         	.elseif edx >= posicaoJogador.y
         		mov edx, posicaoBolinha.x
         		mov ecx, posicaoJogador.x
@@ -737,6 +787,10 @@ fim_colisao:
         ;========== Fim da verificação da colisão bolinha-bloco ==========
         ;=================================================================
 
+
+        ; --------------------------------------------------------------------
+	    ; Movimento horizontal ba bolinha
+	    ; --------------------------------------------------------------------
         .if bolinhaIndoDireita == 0        	
         	mov edx, posicaoBolinha.x
 
@@ -759,6 +813,51 @@ fim_colisao:
         		add posicaoBolinha.x, VEL_BOLINHA
         	.endif
         .endif
+
+        ; ----------------------------------------------------------------------
+    ; Verificando se o jogador destruiu todos os blocos
+    ; ----------------------------------------------------------------------
+    mov jogoAcabou, 1
+	mov indice, 0
+
+inicioLoop:
+    
+	cmp indice, BLOCOS_POR_FILEIRA
+	je parabens
+
+	lea eax, offset amarelos
+	add eax, indice
+	lea ebx, offset verdes
+	add ebx, indice
+	lea ecx, offset azuis
+	add ecx, indice
+   	mov dl, byte ptr[eax]
+	.if dl==1 
+     	jmp continuandoJogo;
+    .endif
+    
+    mov dh, byte ptr[ebx]
+    .if dh==1 
+    	jmp continuandoJogo;
+    .endif
+    
+    mov cl, byte ptr[ecx]
+    
+    .if cl==1
+    	jmp continuandoJogo;	
+    .endif
+
+	add indice, 1
+	jmp inicioLoop
+
+parabens:
+	.if jogoAcabou ==1
+    	invoke SendMessage,hWin,WM_SYSCOMMAND,SC_CLOSE,NULL
+   .endif
+
+continuandoJogo:
+		
+mov jogoAcabou, 0
 
         invoke LoadBitmap, hInstance, ID_FUNDO   ; Lê os gráficos para o "cenário"
         mov hFundo, eax                          ; Coloca um handle na memória
